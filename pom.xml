@@ -10,7 +10,7 @@
 
   <properties>
     <!-- the main verticle -->
-    <main.verticle>com.thoughtworks.ThoughtCodeVerticle</main.verticle>
+    <main.verticle>com.thoughtworks.tca.verticle.ThoughtCodeVerticle</main.verticle>
     <vertx.version>3.3.2</vertx.version>
   </properties>
 

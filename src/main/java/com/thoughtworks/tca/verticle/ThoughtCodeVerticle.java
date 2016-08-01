@@ -1,4 +1,4 @@
-package com.thoughtworks;
+package com.thoughtworks.tca.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerOptions;
