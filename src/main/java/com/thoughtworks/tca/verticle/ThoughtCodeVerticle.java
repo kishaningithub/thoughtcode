@@ -1,6 +1,7 @@
 package com.thoughtworks.tca.verticle;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
@@ -11,8 +12,12 @@ import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -26,6 +31,12 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
     public void start() {
 
         Router router = Router.router(vertx);
+        Set<HttpMethod> allowedHTTPMethods = new HashSet<>();
+        allowedHTTPMethods.add(HttpMethod.GET);
+        allowedHTTPMethods.add(HttpMethod.POST);
+        allowedHTTPMethods.add(HttpMethod.PUT);
+        allowedHTTPMethods.add(HttpMethod.DELETE);
+        router.route().handler(CorsHandler.create("*").allowedMethods(allowedHTTPMethods));
 
         router.route().handler(BodyHandler.create());
         router.post("/api/v1/questions").handler(this::handleAddQuestion);
