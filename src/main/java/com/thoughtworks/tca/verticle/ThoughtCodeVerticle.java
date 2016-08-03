@@ -157,19 +157,23 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                 LOG.log(Level.SEVERE, "Unable to get DB connection");
             } else {
                 final SQLConnection connection = conn.result();
-                String query = "select qid, title, description_url descriptionUrl, description description, is_asked isAsked, where_asked whereAsked, last_updated_dttm lastUpdated from question";
+                String query = "select description_url descriptionUrl, where_asked whereAsked from question order by where_asked";
                 connection.query(query, res -> {
-                    ResultSet rs = res.result();
-                    List<String> columns = rs.getColumnNames();
-                    List<JsonArray> data = rs.getResults();
-                    JsonArray arr = new JsonArray(data.stream().map( value ->
-                            new JsonObject(IntStream.range(0, columns.size()).boxed().collect(Collectors.toMap(i -> columns.get(i), i -> value.getList().get(i))))
-                    ).collect(Collectors.toList()));
-                    connection.close();
-                    LOG.log(Level.INFO, arr.size() + " questions returned ");
-                    routingContext.response().putHeader("content-type", "application/json").end(arr.encodePrettily());
+                    if(res.failed()){
+                        Log.log(Level.SEVERE, "Unable to fetch query result");
+                        connection.close();
+                    }else{
+                        ResultSet rs = res.result();
+                        List<String> columns = rs.getColumnNames();
+                        List<JsonArray> data = rs.getResults();
+                        JsonArray arr = new JsonArray(data.stream().map( value ->
+                                new JsonObject(IntStream.range(0, columns.size()).boxed().collect(Collectors.toMap(i -> columns.get(i), i -> value.getList().get(i))))
+                        ).collect(Collectors.toList()));
+                        connection.close();
+                        LOG.log(Level.INFO, arr.size() + " questions returned ");
+                        routingContext.response().putHeader("content-type", "application/json").end(arr.encodePrettily());
+                    }
                 });
-
             }
         });
     }
