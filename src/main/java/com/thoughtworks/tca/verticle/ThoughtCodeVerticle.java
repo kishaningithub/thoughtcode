@@ -166,6 +166,8 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         ResultSet rs = res.result();
                         List<String> columns = rs.getColumnNames();
                         List<JsonArray> data = rs.getResults();
+                        LOG.log(Level.INFO, "columns " + columns);
+                        LOG.log(Level.INFO, "data " + data);
                         LOG.log(Level.INFO, "Data size " + ((data == null)? "null":data.size()));
                         JsonArray arr = new JsonArray(data.stream().map( value ->
                                 new JsonObject(IntStream.range(0, columns.size()).boxed().collect(Collectors.toMap(i -> columns.get(i), i -> value.getList().get(i))))
