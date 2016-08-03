@@ -170,7 +170,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         LOG.log(Level.INFO, "data " + data);
                         LOG.log(Level.INFO, "Data size " + ((data == null)? "null":data.size()));
                         JsonArray arr = new JsonArray(data.stream().map( value ->
-                                new JsonObject(IntStream.range(0, columns.size()).boxed().collect(Collectors.toMap(i -> columns.get(i), i -> value.getList().get(i))))
+                                new JsonObject(IntStream.range(0, columns.size()).boxed().collect(Collectors.toMap(i -> columns.get(i), i -> value.getList().get(i) == null ? "" : value.getList().get(i) )))
                         ).collect(Collectors.toList()));
                         connection.close();
                         LOG.log(Level.INFO, arr.size() + " questions returned ");
