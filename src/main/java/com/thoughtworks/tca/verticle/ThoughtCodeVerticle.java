@@ -157,7 +157,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                 LOG.log(Level.SEVERE, "Unable to get DB connection");
             } else {
                 final SQLConnection connection = conn.result();
-                String query = "select description_url descriptionUrl, where_asked whereAsked from question order by where_asked";
+                String query = "select description_url descriptionUrl, coding_round codingRound, where_asked whereAsked from question order by where_asked";
                 connection.query(query, res -> {
                     if(res.failed()){
                         LOG.log(Level.SEVERE, "Unable to fetch query result");
@@ -166,6 +166,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         ResultSet rs = res.result();
                         List<String> columns = rs.getColumnNames();
                         List<JsonArray> data = rs.getResults();
+                        LOG.log(Level.INFO, "Data size " + ((data == null)? "null":data.size()));
                         JsonArray arr = new JsonArray(data.stream().map( value ->
                                 new JsonObject(IntStream.range(0, columns.size()).boxed().collect(Collectors.toMap(i -> columns.get(i), i -> value.getList().get(i))))
                         ).collect(Collectors.toList()));
