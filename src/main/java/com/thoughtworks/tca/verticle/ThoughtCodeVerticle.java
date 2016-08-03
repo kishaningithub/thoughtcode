@@ -40,7 +40,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
 
         router.route().handler(BodyHandler.create());
         router.post("/api/v1/questions").handler(this::handleAddQuestion);
-        router.put("/api/v1/questions/:questionID").handler(this::handleUpdateQuestion);
+        router.patch("/api/v1/questions/:questionID").handler(this::handleUpdateQuestion);
         router.delete("/api/v1/questions/:questionID").handler(this::handleDeleteQuestion);
         router.get("/api/v1/questions").handler(this::handleListQuestions);
 
@@ -70,13 +70,10 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                 sendError(500, response);
             }else{
                 final SQLConnection connection = conn.result();
-                String query = "insert into question(title, description_url, description, is_asked, where_asked, last_updated_dttm) values(?,?,?,?,?,CURRENT_TIMESTAMP)";
+                String query = "insert into question(description_url, coding_round) values(?, ?)";
                 JsonArray params = new JsonArray()
-                        .add(question.getValue("title"))
                         .add(question.getValue("descriptionUrl"))
-                        .add(question.getValue("description"))
-                        .add(question.getValue("isAsked"))
-                        .add(question.getValue("whereAsked"));
+                        .add(question.getValue("codingRound"));
                 connection.updateWithParams(query, params, res -> {
                     if(res.failed()){
                         LOG.log(Level.SEVERE, res.cause().getMessage());
@@ -106,12 +103,8 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         sendError(500, response);
                     }else{
                         final SQLConnection connection = conn.result();
-                        String query = "update question set title = ?,  description_url = ?, description = ?, is_asked = ?, where_asked = ?, last_updated_dttm = CURRENT_TIMESTAMP where qid = ?";
+                        String query = "update question set where_asked = ? where qid = ?";
                         JsonArray params = new JsonArray()
-                                .add(question.getValue("title"))
-                                .add(question.getValue("descriptionUrl"))
-                                .add(question.getValue("description"))
-                                .add(question.getValue("isAsked"))
                                 .add(question.getValue("whereAsked"))
                                 .add(Integer.parseInt(questionID));
                         connection.updateWithParams(query, params, res -> {
