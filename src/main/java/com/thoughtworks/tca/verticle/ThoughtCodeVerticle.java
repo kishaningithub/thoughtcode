@@ -160,7 +160,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                 String query = "select description_url descriptionUrl, where_asked whereAsked from question order by where_asked";
                 connection.query(query, res -> {
                     if(res.failed()){
-                        Log.log(Level.SEVERE, "Unable to fetch query result");
+                        LOG.log(Level.SEVERE, "Unable to fetch query result");
                         connection.close();
                     }else{
                         ResultSet rs = res.result();
