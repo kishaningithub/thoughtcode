@@ -186,7 +186,8 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                                 Response response = client.newCall(request).execute();
                                 if(response.isSuccessful()){
                                     String serviceResponse = response.body().string();
-                                    LOG.log(Level.INFO, "google " + serviceResponse);
+                                    JsonObject serviceResponseObj = new JsonObject(serviceResponse);
+                                    jsonObject.mergeIn(serviceResponseObj);
                                 }
                             } catch (IOException e) {
                                 LOG.log(Level.SEVERE, "Unable to process http request");
