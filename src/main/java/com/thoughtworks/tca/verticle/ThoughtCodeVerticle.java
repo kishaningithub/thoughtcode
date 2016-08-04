@@ -175,9 +175,10 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         data.forEach(row -> {
                             JsonObject jsonObject = new JsonObject();
                             jsonObject.put("descriptionURL", row.getValue(0));
-                            httpClient.getNow("script.google.com", "/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec?docUrl=" + row.getValue(0),  response -> {
+                            vertx.createHttpClient().getNow("script.google.com", "/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec?docUrl=" + row.getValue(0),  response -> {
+                                LOG.log(Level.INFO, "Received response " + response.statusCode());
                                 response.bodyHandler(body -> {
-                                    LOG.log(Level.INFO, body.toJsonArray().encodePrettily());
+                                    LOG.log(Level.INFO, body.toString());
                                 });
                             });
                             jsonObject.put("codingRound", row.getValue(1));
