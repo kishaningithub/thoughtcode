@@ -174,14 +174,14 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                             HttpClient hc = vertx.createHttpClient();
                             hc.getAbs("https://script.googleusercontent.com/a/macros/thoughtworks.com/echo?user_content_key=oYXXzg7r2yjGJKdjq3RRr8Vs7zefV8TzmBTpl7zwbjv9sQ7Nz9RjjhuJIRfwvHqbR2COiYoZhIGBciGEgtdy1zwBaaB6hsgFOJmA1Yb3SEsKFZqtv3DaNYcMrmhZHmUMi80zadyHLKB8DuHaIFmXxVEMAYNktrUI7ys-jMFyi0fgv2DcpJfYEJtxDZAxjqac8w1IeZzPYl_Ga07Z-pGhh7PL7998K0AnjWYuW-I85f5HUW6JQ3PqLeeYS61gqFdQYTF7VczYZsSk4FQWk6uUzGXo29FpRoIoOmWzhYTVjCZgTJ-FPsB6kppSvPqmQH04oEWSI6IeiwL4I83pbmlCnLdIISmiICHMxVV6qKodWoT41VAaEdE9Mg&lib=MHkPp2fwPvUBs9NFmV17tBYXYVqmUJtv8", response -> {
                                 response.bodyHandler(body -> {
-                                    LOG.info(Level.INFO, body.toJsonArray());
+                                    LOG.log(Level.INFO, body.toJsonArray().encodePrettily());
                                 });
                             }).end();
                             jsonObject.put("codingRound", row.getValue(1));
                             jsonObject.put("whereAsked", row.getValue(2));
                         });
                         connection.close();
-                        LOG.log(Level.INFO, arr.size() + " questions returned ");
+                        LOG.log(Level.INFO, returnArray.size() + " questions returned ");
                         routingContext.response().putHeader("content-type", "application/json").end(returnArray.encode());
                     }
                 });
