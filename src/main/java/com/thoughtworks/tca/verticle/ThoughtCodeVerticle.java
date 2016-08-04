@@ -28,8 +28,12 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
 
     private final Logger LOG = Logger.getLogger(ThoughtCodeVerticle.class.getName());
 
+    private HttpClient httpClient;
+
     @Override
     public void start() {
+
+        httpClient = vertx.createHttpClient();
 
         Router router = Router.router(vertx);
         Set<HttpMethod> allowedHTTPMethods = new HashSet<>();
@@ -171,8 +175,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         data.forEach(row -> {
                             JsonObject jsonObject = new JsonObject();
                             jsonObject.put("descriptionURL", row.getValue(0));
-                            HttpClient hc = vertx.createHttpClient();
-                            hc.getAbs("https://script.googleusercontent.com/a/macros/thoughtworks.com/echo?user_content_key=oYXXzg7r2yjGJKdjq3RRr8Vs7zefV8TzmBTpl7zwbjv9sQ7Nz9RjjhuJIRfwvHqbR2COiYoZhIGBciGEgtdy1zwBaaB6hsgFOJmA1Yb3SEsKFZqtv3DaNYcMrmhZHmUMi80zadyHLKB8DuHaIFmXxVEMAYNktrUI7ys-jMFyi0fgv2DcpJfYEJtxDZAxjqac8w1IeZzPYl_Ga07Z-pGhh7PL7998K0AnjWYuW-I85f5HUW6JQ3PqLeeYS61gqFdQYTF7VczYZsSk4FQWk6uUzGXo29FpRoIoOmWzhYTVjCZgTJ-FPsB6kppSvPqmQH04oEWSI6IeiwL4I83pbmlCnLdIISmiICHMxVV6qKodWoT41VAaEdE9Mg&lib=MHkPp2fwPvUBs9NFmV17tBYXYVqmUJtv8", response -> {
+                            httpClient.get("https://script.googleusercontent.com/a/macros/thoughtworks.com/echo?user_content_key=oYXXzg7r2yjGJKdjq3RRr8Vs7zefV8TzmBTpl7zwbjv9sQ7Nz9RjjhuJIRfwvHqbR2COiYoZhIGBciGEgtdy1zwBaaB6hsgFOJmA1Yb3SEsKFZqtv3DaNYcMrmhZHmUMi80zadyHLKB8DuHaIFmXxVEMAYNktrUI7ys-jMFyi0fgv2DcpJfYEJtxDZAxjqac8w1IeZzPYl_Ga07Z-pGhh7PL7998K0AnjWYuW-I85f5HUW6JQ3PqLeeYS61gqFdQYTF7VczYZsSk4FQWk6uUzGXo29FpRoIoOmWzhYTVjCZgTJ-FPsB6kppSvPqmQH04oEWSI6IeiwL4I83pbmlCnLdIISmiICHMxVV6qKodWoT41VAaEdE9Mg&lib=MHkPp2fwPvUBs9NFmV17tBYXYVqmUJtv8", response -> {
                                 response.bodyHandler(body -> {
                                     LOG.log(Level.INFO, body.toJsonArray().encodePrettily());
                                 });
