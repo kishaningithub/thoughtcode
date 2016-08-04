@@ -1,5 +1,6 @@
 package com.thoughtworks.tca.verticle;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
@@ -13,7 +14,11 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +31,8 @@ import java.util.stream.IntStream;
 public class ThoughtCodeVerticle extends AbstractVerticle {
 
     private final Logger LOG = Logger.getLogger(ThoughtCodeVerticle.class.getName());
+
+    private final OkHttpClient client = new OkHttpClient();
 
     @Override
     public void start() {
@@ -170,13 +177,20 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         data.forEach(row -> {
                             JsonObject jsonObject = new JsonObject();
                             jsonObject.put("descriptionURL", row.getValue(0));
-                            vertx.createHttpClient(new HttpClientOptions().setSsl(true)).getNow(443, "script.google.com", "/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec?docUrl=" + row.getValue(0), response -> {
-                                LOG.log(Level.INFO, "Received response " + response.statusCode());
-
-                                response.bodyHandler(body -> {
-                                    LOG.log(Level.INFO, body.toString());
-                                });
-                            });
+                            String serviceURL = "https://script.google.com/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec";
+                            String params = "docURL=" + row.getValue(0);
+                            Request request = new Request.Builder()
+                                    .url(serviceURL + "?" + params)
+                                    .build();
+                            try {
+                                Response response = client.newCall(request).execute();
+                                if(response.isSuccessful()){
+                                    String serviceResponse = response.body().string();
+                                    LOG.log(Level.INFO, "google " + serviceResponse);
+                                }
+                            } catch (IOException e) {
+                                LOG.log(Level.SEVERE, "Unable to process http request");
+                            }
                             jsonObject.put("codingRound", row.getValue(1));
                             jsonObject.put("whereAsked", row.getValue(2));
                             returnArray.add(jsonObject);
