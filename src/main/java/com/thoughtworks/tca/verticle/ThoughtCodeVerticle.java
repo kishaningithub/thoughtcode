@@ -1,6 +1,7 @@
 package com.thoughtworks.tca.verticle;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
@@ -157,24 +158,31 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                 LOG.log(Level.SEVERE, "Unable to get DB connection");
             } else {
                 final SQLConnection connection = conn.result();
-                String query = "select description_url descriptionUrl, coding_round codingRound, where_asked whereAsked from question order by where_asked";
+                String query = "select description_url, coding_round, where_asked from question order by where_asked";
                 connection.query(query, res -> {
                     if(res.failed()){
                         LOG.log(Level.SEVERE, "Unable to fetch query result");
                         connection.close();
                     }else{
                         ResultSet rs = res.result();
-                        List<String> columns = rs.getColumnNames();
                         List<JsonArray> data = rs.getResults();
-                        LOG.log(Level.INFO, "columns " + columns);
-                        LOG.log(Level.INFO, "data " + data);
                         LOG.log(Level.INFO, "Data size " + ((data == null)? "null":data.size()));
-                        JsonArray arr = new JsonArray(data.stream().map( value ->
-                                new JsonObject(IntStream.range(0, columns.size()).boxed().collect(Collectors.toMap(i -> columns.get(i), i -> value.getList().get(i) == null ? "" : value.getList().get(i) )))
-                        ).collect(Collectors.toList()));
+                        JsonArray returnArray = new JsonArray();
+                        data.forEach(row -> {
+                            JsonObject jsonObject = new JsonObject();
+                            jsonObject.put("descriptionURL", row.getValue(0));
+                            HttpClient hc = vertx.createHttpClient();
+                            hc.getAbs("https://script.googleusercontent.com/a/macros/thoughtworks.com/echo?user_content_key=oYXXzg7r2yjGJKdjq3RRr8Vs7zefV8TzmBTpl7zwbjv9sQ7Nz9RjjhuJIRfwvHqbR2COiYoZhIGBciGEgtdy1zwBaaB6hsgFOJmA1Yb3SEsKFZqtv3DaNYcMrmhZHmUMi80zadyHLKB8DuHaIFmXxVEMAYNktrUI7ys-jMFyi0fgv2DcpJfYEJtxDZAxjqac8w1IeZzPYl_Ga07Z-pGhh7PL7998K0AnjWYuW-I85f5HUW6JQ3PqLeeYS61gqFdQYTF7VczYZsSk4FQWk6uUzGXo29FpRoIoOmWzhYTVjCZgTJ-FPsB6kppSvPqmQH04oEWSI6IeiwL4I83pbmlCnLdIISmiICHMxVV6qKodWoT41VAaEdE9Mg&lib=MHkPp2fwPvUBs9NFmV17tBYXYVqmUJtv8", response -> {
+                                response.bodyHandler(body -> {
+                                    LOG.info(Level.INFO, body.toJsonArray());
+                                });
+                            }).end();
+                            jsonObject.put("codingRound", row.getValue(1));
+                            jsonObject.put("whereAsked", row.getValue(2));
+                        });
                         connection.close();
                         LOG.log(Level.INFO, arr.size() + " questions returned ");
-                        routingContext.response().putHeader("content-type", "application/json").end(arr.encodePrettily());
+                        routingContext.response().putHeader("content-type", "application/json").end(returnArray.encode());
                     }
                 });
             }
