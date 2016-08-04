@@ -1,10 +1,7 @@
 package com.thoughtworks.tca.verticle;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
@@ -28,12 +25,8 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
 
     private final Logger LOG = Logger.getLogger(ThoughtCodeVerticle.class.getName());
 
-    private HttpClient httpClient;
-
     @Override
     public void start() {
-
-        httpClient = vertx.createHttpClient();
 
         Router router = Router.router(vertx);
         Set<HttpMethod> allowedHTTPMethods = new HashSet<>();
@@ -175,8 +168,9 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         data.forEach(row -> {
                             JsonObject jsonObject = new JsonObject();
                             jsonObject.put("descriptionURL", row.getValue(0));
-                            vertx.createHttpClient().getNow("script.google.com", "/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec?docUrl=" + row.getValue(0),  response -> {
+                            vertx.createHttpClient(new HttpClientOptions().setSsl(true)).getNow("script.google.com", "/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec?docUrl=" + row.getValue(0), response -> {
                                 LOG.log(Level.INFO, "Received response " + response.statusCode());
+
                                 response.bodyHandler(body -> {
                                     LOG.log(Level.INFO, body.toString());
                                 });
