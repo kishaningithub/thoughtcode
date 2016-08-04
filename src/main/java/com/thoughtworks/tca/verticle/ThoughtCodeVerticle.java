@@ -170,7 +170,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         data.forEach(row -> {
                             JsonObject jsonObject = new JsonObject();
                             jsonObject.put("descriptionURL", row.getValue(0));
-                            vertx.createHttpClient(new HttpClientOptions().setSsl(true)).getNow("script.google.com", "/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec?docUrl=" + row.getValue(0), response -> {
+                            vertx.createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(true)).getNow("script.google.com", "/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec?docUrl=" + row.getValue(0), response -> {
                                 LOG.log(Level.INFO, "Received response " + response.statusCode());
 
                                 response.bodyHandler(body -> {
