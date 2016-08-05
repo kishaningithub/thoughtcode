@@ -186,7 +186,6 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                             Response response = client.newCall(request).execute();
                             if(response.isSuccessful()){
                                 String serviceResponse = response.body().string();
-                                LOG.log(Level.INFO, "Google response-" + serviceResponse);
                                 JsonArray serviceRespJA = new JsonArray(serviceResponse);
                                 for(int i = 0; i < serviceRespJA.size(); i++){
                                     JsonObject ithObject = serviceRespJA.getJsonObject(i);
