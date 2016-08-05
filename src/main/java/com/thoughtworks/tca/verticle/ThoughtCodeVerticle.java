@@ -14,15 +14,10 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -79,7 +74,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                 final SQLConnection connection = conn.result();
                 String query = "insert into question(description_url, coding_round) values(?, ?)";
                 JsonArray params = new JsonArray()
-                        .add(question.getValue("descriptionUrl"))
+                        .add(question.getValue("descriptionURL"))
                         .add(question.getValue("codingRound"));
                 connection.updateWithParams(query, params, res -> {
                     if(res.failed()){
@@ -173,27 +168,42 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                         ResultSet rs = res.result();
                         List<JsonArray> data = rs.getResults();
                         LOG.log(Level.INFO, "Data size " + ((data == null)? "null":data.size()));
+                        // Getting from google service
+                        List<String> descriptionURLLst = data.stream()
+                                .map(jsonArr -> jsonArr.getString(0))
+                                .collect(Collectors.toList());
+
+                        JsonArray descriptonURLArr = new JsonArray(descriptionURLLst);
+                        String serviceURL = "https://script.google.com/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec";
+
+                        Request request = new Request.Builder()
+                                .url(serviceURL)
+                                .post(RequestBody.create(MediaType.parse("application/json; charset=utf-8"), descriptonURLArr.encode()))
+                                .build();
+
+                        Map<String, JsonObject> descriptionURLJSONMap = new HashMap<>();
+                        try {
+                            Response response = client.newCall(request).execute();
+                            if(response.isSuccessful()){
+                                String serviceResponse = response.body().string();
+                                LOG.log(Level.INFO, "Google response-" + serviceResponse);
+                                JsonArray serviceRespJA = new JsonArray(serviceResponse);
+                                for(int i = 0; i < serviceRespJA.size(); i++){
+                                    JsonObject ithObject = serviceRespJA.getJsonObject(i);
+                                    descriptionURLJSONMap.put(ithObject.getString("descriptionURL"), ithObject);
+                                }
+                            }
+                        } catch (IOException e) {
+                            LOG.log(Level.SEVERE, "Unable to process http request");
+                        }
+
                         JsonArray returnArray = new JsonArray();
                         data.forEach(row -> {
                             JsonObject jsonObject = new JsonObject();
                             jsonObject.put("descriptionURL", row.getValue(0));
-                            String serviceURL = "https://script.google.com/macros/s/AKfycbwRVDKt5ApSadrc04rBUEugnWxNmY6iHpMgLxScBSamPmHmCzxl/exec";
-                            String params = "docURL=" + row.getValue(0);
-                            Request request = new Request.Builder()
-                                    .url(serviceURL + "?" + params)
-                                    .build();
-                            try {
-                                Response response = client.newCall(request).execute();
-                                if(response.isSuccessful()){
-                                    String serviceResponse = response.body().string();
-                                    JsonObject serviceResponseObj = new JsonObject(serviceResponse);
-                                    jsonObject.mergeIn(serviceResponseObj);
-                                }
-                            } catch (IOException e) {
-                                LOG.log(Level.SEVERE, "Unable to process http request");
-                            }
                             jsonObject.put("codingRound", row.getValue(1));
                             jsonObject.put("whereAsked", row.getValue(2));
+                            jsonObject.mergeIn(descriptionURLJSONMap.get(jsonObject.getString("descriptionURL")));
                             returnArray.add(jsonObject);
                         });
                         connection.close();

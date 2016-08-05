@@ -21,7 +21,6 @@ public class MigrateDB {
                     .put("url", System.getenv("JDBC_DATABASE_URL")));
             Flyway flyway = new Flyway();
             flyway.setDataSource(dataSource);
-            flyway.clean();
             flyway.migrate();
         } catch (SQLException e) {
             LOG.log(Level.SEVERE, "Unable to perform DB migration", e);
