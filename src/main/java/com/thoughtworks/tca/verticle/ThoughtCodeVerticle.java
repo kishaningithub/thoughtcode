@@ -189,7 +189,7 @@ public class ThoughtCodeVerticle extends AbstractVerticle {
                                 LOG.log(Level.INFO, "Google response " + serviceResponse);
                                 JsonArray serviceRespJA = new JsonArray(serviceResponse);
                                 for(int i = 0; i < serviceRespJA.size(); i++){
-                                    JsonObject ithObject = new JsonObject(serviceRespJA.getString(i));
+                                    JsonObject ithObject = serviceRespJA.getJsonObject(i);
                                     descriptionURLJSONMap.put(ithObject.getString("descriptionURL"), ithObject);
                                 }
                             }
